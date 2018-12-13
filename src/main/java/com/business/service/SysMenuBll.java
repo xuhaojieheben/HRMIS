@@ -18,6 +18,9 @@ public class SysMenuBll implements ISysMenuBll{
 	public List<MenuModel> CreateMenu() {
 		// TODO 自动生成的方法存根
 		List<Sys_Menu> menus = _iSysMenuService.SelectAll();
+		
+		
+		
 		List<MenuModel> rootMenus = new ArrayList<MenuModel>();
 		List<Sys_Menu> result = menus.stream()
 				.filter((Sys_Menu menu) -> menu.getMENU_PARENT().contains("1000"))
