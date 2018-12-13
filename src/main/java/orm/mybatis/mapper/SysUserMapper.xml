@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="orm.mybatis.idao.ISysUserMapper" >
+	
+	<select id="ValidateUser" parameterType="Map" resultType="model.sysmodel.entity.Sys_User">
+        select * from SYS_USER where ACCOUNT=#{ACCOUNT} and PASSWORD=#{PASSWORD} and ISDEL = 0
+    </select>
+    
+    <insert id="Add" useGeneratedKeys="false" keyProperty="ID" parameterType="model.sysmodel.entity.Sys_User">
+  		insert into SYS_USER (NAME, BIRTHDAY, CREATEDATE, PASSWORD, ACCOUNT, ISDEL) VALUES (#{NAME},#{BIRTHDAY},#{CREATEDATE},#{PASSWORD},#{ACCOUNT},0)
+	</insert>
+	
+	<select id="QuerySysUserByPage" parameterType="model.sysmodel.entity.Sys_User" resultType="model.sysmodel.entity.Sys_User">
+        select * from SYS_USER
+    </select>
+</mapper>

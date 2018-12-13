@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+       http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">       
+       
+    <!--开启注解配置自动扫描IOC相关注解 也可不用该配置 使用<context:component-scan base-package="com.**.impl"/>   
+     -->	
+    <context:annotation-config />
+    
+    <context:component-scan base-package="com.data.service"></context:component-scan>
+    <context:component-scan base-package="com.business.service"></context:component-scan>
+    <!-- 扫描拦截器代码所在的包并在springmvc配置文件中配置<mvc:interceptors>此处不扫描拦截器将无法使用
+     	配置AOP环绕通知时也需要扫描该包因为AOP代码注解也放在了该包下
+     -->
+    <context:component-scan base-package="com.componentscan.unity"></context:component-scan>
+    <!-- 自动为切面方法中匹配的方法所在的类生成代理对象。下面是环绕通知配置
+     -->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+    <!--加载数据库配置项 -->
+    <context:property-placeholder location="classpath:db.properties"/>
+	<!-- 阿里 druid数据库连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">  
+         <!-- 数据库基本信息配置 -->
+         <property name="url" value="${jdbc.url}" />  
+         <property name="username" value="${jdbc.username}" />  
+         <property name="password" value="${jdbc.password}" />  
+         <property name="driverClassName" value="${jdbc.driverClassName}" />  
+         <property name="filters" value="${jdbc.filters}" />  
+         <!-- 最大并发连接数 -->
+         <property name="maxActive" value="${jdbc.maxActive}" />
+         <!-- 初始化连接数量 -->
+         <property name="initialSize" value="${jdbc.initialSize}" />
+         <!-- 配置获取连接等待超时的时间 -->
+         <property name="maxWait" value="${jdbc.maxWait}" />
+         <!-- 最小空闲连接数 -->
+         <property name="minIdle" value="${jdbc.minIdle}" />  
+         <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+         <property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}" />
+         <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+         <property name="minEvictableIdleTimeMillis" value="${jdbc.minEvictableIdleTimeMillis}" />  
+         <property name="validationQuery" value="${jdbc.validationQuery}" />  
+         <property name="testWhileIdle" value="${jdbc.testWhileIdle}" />  
+         <property name="testOnBorrow" value="${jdbc.testOnBorrow}" />  
+         <property name="testOnReturn" value="${jdbc.testOnReturn}" />  
+         <property name="maxOpenPreparedStatements" value="${jdbc.maxOpenPreparedStatements}" />
+         <!-- 打开removeAbandoned功能 -->
+         <property name="removeAbandoned" value="${jdbc.removeAbandoned}" />
+         <!-- 1800秒，也就是30分钟 -->
+         <property name="removeAbandonedTimeout" value="${jdbc.removeAbandonedTimeout}" />
+         <!-- 关闭abanded连接时输出错误日志 -->   
+         <property name="logAbandoned" value="${jdbc.logAbandoned}" />
+    </bean>
+	
+	<!-- 配置SqlSessionFactory，org.mybatis.spring.SqlSessionFactoryBean是Mybatis社区开发用于整合Spring的bean -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="mapperLocations" value="classpath:orm/mybatis/mapper/*Mapper.xml" />
+        <!-- mybatis分页插件interceptor -->
+        <property name="plugins">        
+         <array>            
+           <bean class="com.componentscan.unity.SqlInterceptor">                                                                                                         
+           	  <property name="properties">                                                                                                                                          <value>  property-key=property-value </value>                 
+              </property>             
+            </bean>        
+        </array>    
+      </property>
+    </bean>
+    
+    <!-- 配置扫描器 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 扫描me.gacl.dao这个包以及它的子包下的所有映射接口类 -->
+        <property name="basePackage" value="orm.mybatis.idao" />
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+    </bean>
+    
+    <!-- 注册事务管理类 -->
+    <bean id="transactionManager"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+   
+    <!-- AOP事务 配置事务的增强
+    -->
+   <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+        	<tx:method name="Add*" propagation="REQUIRED" rollback-for="Exception" />
+        	<tx:method name="Modify*" propagation="REQUIRED" rollback-for="Exception" />
+        	<tx:method name="Del*" propagation="REQUIRED" rollback-for="Exception"/>
+        	<tx:method name="Do*" propagation="REQUIRED" rollback-for="Exception"/>
+        	<tx:method name="TransferAccounts*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception"/>
+        </tx:attributes>
+    </tx:advice>
+     <!-- 配置切面 -->
+    <aop:config>
+        <!-- 配置切点 -->
+        <aop:pointcut expression="execution(public * com.business.service..*.*(..))" id="pointcut1"/>
+        <!-- 配置切面 -->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut1"/>
+    </aop:config>
+    
+    <!-- 开启事务行为 -->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+    
+    <!-- 配置事务管理模板 用于编程式事务 -->
+    <!--<bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="transactionManager"/>
+    </bean> -->
+	<!-- 配置环绕通知即切面 -->
+    <!--<aop:config>-->
+        <!-- 配置切点 -->
+      <!--  <aop:pointcut expression="execution(public * com.data.service..*.*(..))" id="pointcut1"/> -->
+        <!-- 配置切面 -->
+      <!--  <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut1"/> -->
+    <!--</aop:config>-->
+      <!--<bean id="concurrentOperationExecutor"
+	  class="comm.all.interceptor.ExceptionLog">
+	     <property name="maxRetries" value="1"/>
+	     <property name="order" value="100"/>  
+	</bean>-->
+</beans>

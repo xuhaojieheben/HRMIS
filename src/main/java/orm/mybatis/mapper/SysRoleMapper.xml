@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="orm.mybatis.idao.ISysRoleMapper">
+	<select id="SelectAll" parameterType="Map" resultType="model.sysmodel.entity.Sys_Role">
+        select * from SYS_ROLE where ISDEL = 0
+    </select>
+    <insert id="Add" useGeneratedKeys="false" keyProperty="ID" parameterType="model.sysmodel.entity.Sys_User">
+  		insert into SYS_ROLE (ROLE_ID, ROLE_NAME, CREATEDATE, ISDEL) VALUES (#{ROLE_ID},#{ROLE_NAME},#{CREATEDATE},0)
+	</insert>
+</mapper>
