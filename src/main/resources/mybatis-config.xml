@@ -3,7 +3,7 @@
 <configuration>  
     <!-- 配置数据库方言  目前只有mysql和oracle两种 可被 Configuration访问  -->
     <properties>  
-        <property name="pageSqlRex" value=".*ByPage$" />
+        <property name="pageSqlRex" value=".+ByPage$" />
         <property name="dialect" value="oracle" />
     </properties>
       

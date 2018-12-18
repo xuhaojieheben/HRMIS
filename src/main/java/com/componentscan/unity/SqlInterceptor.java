@@ -2,8 +2,6 @@ package com.componentscan.unity;
 
 import java.sql.Connection;
 import java.util.Properties;
-
-
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
@@ -25,9 +23,8 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.RowBounds;
 import org.aspectj.bridge.ReflectionFactory;
-
 import com.core.library.Dialect;
-
+import com.iflytek.mybatis.page.dialect.OracleDialect;
 
 
 @Intercepts({@Signature( type= StatementHandler.class,  method = "prepare",  args = {Connection.class,Integer.class})})
@@ -40,19 +37,46 @@ public class SqlInterceptor implements Interceptor{
 	public Object intercept(Invocation invocation) throws Throwable {
 		// TODO 自动生成的方法存根
     	StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
-    	BoundSql boundSql = statementHandler.getBoundSql();
-    	System.out.println(boundSql);
     	MetaObject metaStatementHandler = MetaObject.forObject(statementHandler, DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY, DEFAULT_REFLECTORFACTORY);
-    	
         Configuration configuration = (Configuration) metaStatementHandler.getValue("delegate.configuration");
         Dialect.Type databaseType = null;
+        String _handleName = "";
         try {
             databaseType = Dialect.Type.valueOf(configuration.getVariables().getProperty("dialect").toUpperCase());
         } catch (Exception e) {
             
-        }
-        if (databaseType == null) {
+        }if (databaseType == null) {
             throw new RuntimeException("the value of the dialect property in configuration.xml is not defined : " + configuration.getVariables().getProperty("dialect"));
+        }
+        try {
+        	_handleName = configuration.getVariables().getProperty("pageSqlRex").toUpperCase();
+        } catch (Exception e) {
+            
+        }if (_handleName == null) {
+            throw new RuntimeException("the value of the pageSqlRex property in configuration.xml is not defined : " + configuration.getVariables().getProperty("pageSqlRex"));
+        }
+        //获取查询接口映射的相关信息
+        MappedStatement mappedStatement = (MappedStatement) metaStatementHandler.getValue("delegate.mappedStatement");
+        if (mappedStatement.getId().matches(_handleName)) {
+        	Dialect dialect = null;
+            switch (databaseType) {  
+            case MYSQL:  
+                //dialect = new OracleDialect();
+                break;  
+            case MSSQL:  
+                //dialect = new OracleDialect();
+                break;  
+            case ORACLE:  
+                dialect = new OracleDialect();
+                break;  
+            default:  
+                dialect = new OracleDialect();
+            }  
+        	
+        	BoundSql boundSql = statementHandler.getBoundSql();
+        	System.out.println(boundSql);
+        	
+        	
         }
         //调用原对象的方法，进入责任链的下一级
         return invocation.proceed();
@@ -61,21 +85,20 @@ public class SqlInterceptor implements Interceptor{
 	@Override
 	public Object plugin(Object target) {
 		// TODO 自动生成的方法存根
-		return Plugin.wrap(target, this);
+		// 当目标类是StatementHandler类型时，才包装目标类，否者直接返回目标本身,减少目标被代理的  
+	    // 次数  
+	    if (target instanceof StatementHandler) {  
+	        return Plugin.wrap(target, this);  
+	    } else {
+	        return target;  
+	    }  
 	}
 
 	@Override
 	public void setProperties(Properties properties) {
 		// TODO 自动生成的方法存根
 		String prop1 = properties.getProperty("prop1");
-	       String prop2 = properties.getProperty("prop2");
-	       System.out.println(prop1 + "------" + prop2);
-
-		//System.out.println("setProperties");
-		//String pageSqlRegex = properties.getProperty("pageSqlReg");
-
-        //System.out.println(pageSqlRegex);
-        //properties.getProperty("dbType", "mysql");
+	    String prop2 = properties.getProperty("prop2");
+	    System.out.println(prop1 + "------" + prop2);
 	}
-
 }

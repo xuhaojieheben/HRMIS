@@ -38,5 +38,5 @@ public interface Dialect {
      *            每页记录大小
      * @return 返回数据库相关的分页SQL语句
      */
-    public abstract String getPageSql(String sql, int offset, int pageSize);
+    public abstract String GetPageSql(String sql, int offset, int pageSize);
 }
