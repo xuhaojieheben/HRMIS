@@ -1,92 +1,75 @@
 package com.core.library;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-public class Page implements IPage{
-	@Override
-	public StringBuffer SqlWhereStr(Object obj) throws InstantiationException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
-		// TODO è‡ªåŠ¨ç”Ÿæˆçš„æ–¹æ³•å­˜æ ¹
-		int currPage = 0;
-		int pageSize = 0;
-		StringBuffer sqlLimit = null;
-		StringBuffer sqlWhere = new StringBuffer(" where 1 = 1");
-		//è·å–çˆ¶ç±»(å…·å¤‡å½“å‰é¡µå’Œæ¯é¡µæ˜¾ç¤ºæ•°é‡çš„pageå‚æ•°ç±»)
-		Class<?> superClass = obj.getClass().getSuperclass();
-		//è·å–çˆ¶ç±»åç§°
-		String objSuper = superClass.getName();
-		//è·å–çˆ¶ç±»å­—æ®µs
-		Field[] superFields = superClass.getDeclaredFields();
-		if(superFields.length > 0) {
-			Object _super = Class.forName(objSuper).newInstance();
-			Method method = null;
-			for(Field f : superFields) {
-				f.setAccessible(true);
-				String where = "";
-				String key = f.getName();
-				method = _super.getClass().getMethod("get" + key);
-				if(key.toUpperCase().equals("INDEXPAGE") || key.toUpperCase().equals("CURRPAGE")) {
-					currPage = (int)method.invoke(obj);
-				}else if(key.toUpperCase().equals("PAGECOUNT") || key.toUpperCase().equals("PAGENUMBER") || key.toUpperCase().equals("PAGESIZE")){
-					pageSize = (int)method.invoke(obj);
-				}else if(key.toUpperCase().equals("ISDEL")){
-					where = String.format(" and %s = 0 ", key);
-					sqlWhere.append(where);
-				}else if(key.toUpperCase().equals("CREATEDATE") || key.toUpperCase().equals("CREATETIME")){
-					//where = String.format(" and {0} = 0", key);
-					//sqlWhere.append(" and  ");
-				}
-				f.setAccessible(false);
-			}
-		}
-		
-		if(currPage >=1 && pageSize >= 1) {
-			String objSimple = obj.getClass().getSimpleName();
-/*			SELECT *
-			  FROM TABLE1
-			 WHERE ROWNUM <= 20
-			MINUS
-			SELECT * FROM TABLE1 WHERE ROWNUM <= 10;*/
-			sqlLimit = new StringBuffer();
-			sqlLimit.append(" AND ROWNUM <= " + pageSize + " MINUS SELECT * FROM " + objSimple + " WHERE ROWNUM <= " + (currPage - 1) * pageSize);
-			//sqlLimit.append(" limit " + (currPage - 1) * pageSize + "," + pageSize);
-			//è·å–objectå¯¹è±¡çš„å­ç±»å³ä¼ è¿‡æ¥çš„ç±»
-			
-			//å®ä¾‹åŒ–å­ç±»
-			Object simple = Class.forName(classPath + objSimple).newInstance();
-			//è·å–å­ç±»æ‰€æœ‰å­—æ®µ
-			Field[] fields = obj.getClass().getDeclaredFields();
-			if(fields.length > 0) {
-				Method method = null;
-				//éå†å­—æ®µ
-				for(Field f : fields) {
-					f.setAccessible(true);
-					String where = "";
-					String key = f.getName();
-					method = simple.getClass().getMethod("get" + key);
-					Object _value = method.invoke(obj);
-					if(_value != null && !_value.equals("")) {
-						//åˆ¤æ–­æ¯ä¸ªå­—æ®µçš„ç±»å‹æ ¹æ®ç±»å‹ç”Ÿæˆå¯¹åº”çš„æŸ¥è¯¢è¯­å¥å¦‚å­—ç¬¦ä¸²ç”¨æ¨¡ç³ŠæŸ¥è¯¢è¯­å¥æ‹¼è£…×°
-						if(f.getType().equals(int.class)) {
-							//æ·»åŠ è‡ªå®šä¹‰ç‰¹æ€§è¯»å–åå¯ä»¥çŸ¥é“ç”¨ç­‰äºè¿˜æ˜¯å¤§äºç°åœ¨é»˜è®¤å…ˆç”¨ç­‰äº
-							if(!key.toUpperCase().equals("ID")) {
-								where = String.format(" and %1$s = %2$d", key, (int)_value);
-							}
-						}
-						if(f.getType().equals(String.class)) {
-							//æ·»åŠ è‡ªå®šä¹‰ç‰¹æ€§è¯»å–åå¯ä»¥çŸ¥é“ç”¨ç­‰äºè¿˜æ˜¯å¤§äºç°åœ¨é»˜è®¤å…ˆç”¨ç­‰äº
-							where = String.format(" and %1$s like %2$s", key, "'%" + _value.toString() + "%'");
-						}
-						if(f.getType().equals(double.class)) {
-							//æ·»åŠ è‡ªå®šä¹‰ç‰¹æ€§è¯»å–åå¯ä»¥çŸ¥é“ç”¨ç­‰äºè¿˜æ˜¯å¤§äºç°åœ¨é»˜è®¤å…ˆç”¨ç­‰äº
-							where = String.format(" and %1$s = %2$f", key, (double)_value);
-						}
-						sqlWhere.append(where);
-					}
-					f.setAccessible(false);
-				}
-			}	
-		}
-		return sqlWhere.append(sqlLimit);
-	}
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Page<T> {
+	private int pageNo = 1;//Ò³Âë£¬Ä¬ÈÏÊÇµÚÒ»Ò³
+    private int pageSize = 10;//Ã¿Ò³ÏÔÊ¾µÄ¼ÇÂ¼Êı£¬Ä¬ÈÏÊÇ10
+    private int totalRecord;//×Ü¼ÇÂ¼Êı
+    private int totalPage;//×ÜÒ³Êı
+    private List<T> results;//¶ÔÓ¦µÄµ±Ç°Ò³¼ÇÂ¼
+    private Map<String, Object> params = new HashMap<String, Object>();//ÆäËûµÄ²ÎÊıÎÒÃÇ°ÑËü·Ö×°³ÉÒ»¸öMap¶ÔÏó
+
+    public int getPageNo() {
+       return pageNo;
+    }
+
+    public void setPageNo(int pageNo) {
+       this.pageNo = pageNo;
+    }
+
+    public int getPageSize() {
+       return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+       this.pageSize = pageSize;
+    }
+
+    public int getTotalRecord() {
+       return totalRecord;
+    }
+
+    public void setTotalRecord(int totalRecord) {
+       this.totalRecord = totalRecord;
+       //ÔÚÉèÖÃ×ÜÒ³ÊıµÄÊ±ºò¼ÆËã³ö¶ÔÓ¦µÄ×ÜÒ³Êı£¬ÔÚÏÂÃæµÄÈıÄ¿ÔËËãÖĞ¼Ó·¨ÓµÓĞ¸ü¸ßµÄÓÅÏÈ¼¶£¬ËùÒÔ×îºó¿ÉÒÔ²»¼ÓÀ¨ºÅ¡£
+       int totalPage = totalRecord%pageSize==0 ? totalRecord/pageSize : totalRecord/pageSize + 1;
+       this.setTotalPage(totalPage);
+    }
+
+    public int getTotalPage() {
+       return totalPage;
+    }
+
+    public void setTotalPage(int totalPage) {
+       this.totalPage = totalPage;
+    }
+
+    public List<T> getResults() {
+       return results;
+    }
+
+    public void setResults(List<T> results) {
+       this.results = results;
+    }
+
+    public Map<String, Object> getParams() {
+       return params;
+    }
+
+    public void setParams(Map<String, Object> params) {
+       this.params = params;
+    }
+
+    @Override
+    public String toString() {
+       StringBuilder builder = new StringBuilder();
+       builder.append("Page [pageNo=").append(pageNo).append(", pageSize=")
+              .append(pageSize).append(", results=").append(results).append(
+                     ", totalPage=").append(totalPage).append(
+                     ", totalRecord=").append(totalRecord).append("]");
+       return builder.toString();
+    }
 }

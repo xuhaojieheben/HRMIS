@@ -1,84 +1,58 @@
 package com.componentscan.unity;
 
 import java.sql.Connection;
-import java.util.Map;
 import java.util.Properties;
+
+
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
+import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
+import org.apache.ibatis.reflection.DefaultReflectorFactory;
 import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.reflection.ReflectorFactory;
 import org.apache.ibatis.reflection.SystemMetaObject;
-import com.core.library.Page;
-import model.sysmodel.entity.Sys_User;
+import org.apache.ibatis.reflection.factory.DefaultObjectFactory;
+import org.apache.ibatis.reflection.factory.ObjectFactory;
+import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
+import org.apache.ibatis.reflection.wrapper.ObjectWrapper;
+import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.RowBounds;
+import org.aspectj.bridge.ReflectionFactory;
+
+import com.core.library.Dialect;
+
+
 
 @Intercepts({@Signature( type= StatementHandler.class,  method = "prepare",  args = {Connection.class,Integer.class})})
 public class SqlInterceptor implements Interceptor{
-	//每页显示的条目数
-    private int pageSize;
-    //当前现实的页数
-    private int currPage;
+	private static final ObjectFactory DEFAULT_OBJECT_FACTORY = new DefaultObjectFactory();
+    private static final ObjectWrapperFactory DEFAULT_OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
+    private static final ReflectorFactory DEFAULT_REFLECTORFACTORY = new DefaultReflectorFactory();
+
     @Override
 	public Object intercept(Invocation invocation) throws Throwable {
 		// TODO 自动生成的方法存根
-		//获取StatementHandler，默认是RoutingStatementHandler
-        StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
-        //获取statementHandler包装类
-        MetaObject MetaObjectHandler = SystemMetaObject.forObject(statementHandler);
-
-        //分离代理对象链
-        while (MetaObjectHandler.hasGetter("h")) {
-            Object obj = MetaObjectHandler.getValue("h");
-            MetaObjectHandler = SystemMetaObject.forObject(obj);
-        }
-
-        while (MetaObjectHandler.hasGetter("target")) {
-            Object obj = MetaObjectHandler.getValue("target");
-            MetaObjectHandler = SystemMetaObject.forObject(obj);
-        }
-
-        //获取连接对象
-        //Connection connection = (Connection) invocation.getArgs()[0];
-
-
-        //object.getValue("delegate");  获取StatementHandler的实现类
-
-        //获取查询接口映射的相关信息
-        MappedStatement mappedStatement = (MappedStatement) MetaObjectHandler.getValue("delegate.mappedStatement");
-        String mapId = mappedStatement.getId();
-
-        //statementHandler.getBoundSql().getParameterObject();
-
-        //拦截以.ByPage结尾的请求，分页功能的统一实现
-        if (mapId.matches(".+ByPage$")) {
-            //获取进行数据库操作时管理参数的handler
-            ParameterHandler parameterHandler = (ParameterHandler) MetaObjectHandler.getValue("delegate.parameterHandler");
-            //获取请求时的参数
-            //Map<String, Object> paraObject = (Map<String, Object>) parameterHandler.getParameterObject();
-            //也可以这样获取
-            //paraObject = (Map<String, Object>) statementHandler.getBoundSql().getParameterObject();
-            Object paramObject = parameterHandler.getParameterObject();
-
-			Page page = new Page();
-            //参数名称和在service中设置到map中的名称一致
-            //currPage = Integer.parseInt(paramObject.get("currPage").toString());
-            //pageSize = Integer.parseInt(paramObject.get("pageSize").toString());
-
-            String sql = (String) MetaObjectHandler.getValue("delegate.boundSql.sql");
-            //也可以通过statementHandler直接获取
-            //sql = statementHandler.getBoundSql().getSql();
+    	StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
+    	BoundSql boundSql = statementHandler.getBoundSql();
+    	System.out.println(boundSql);
+    	MetaObject metaStatementHandler = MetaObject.forObject(statementHandler, DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY, DEFAULT_REFLECTORFACTORY);
+    	
+        Configuration configuration = (Configuration) metaStatementHandler.getValue("delegate.configuration");
+        Dialect.Type databaseType = null;
+        try {
+            databaseType = Dialect.Type.valueOf(configuration.getVariables().getProperty("dialect").toUpperCase());
+        } catch (Exception e) {
             
-            //构建分页功能的sql语句
-            String limitSql = page.SqlWhereStr(paramObject).toString();
-            sql = sql.trim();
-            limitSql = sql + limitSql;
-            System.out.println(limitSql);
-            //将构建完成的分页sql语句赋值个体'delegate.boundSql.sql'
-            MetaObjectHandler.setValue("delegate.boundSql.sql", limitSql);
+        }
+        if (databaseType == null) {
+            throw new RuntimeException("the value of the dialect property in configuration.xml is not defined : " + configuration.getVariables().getProperty("dialect"));
         }
         //调用原对象的方法，进入责任链的下一级
         return invocation.proceed();
@@ -93,8 +67,15 @@ public class SqlInterceptor implements Interceptor{
 	@Override
 	public void setProperties(Properties properties) {
 		// TODO 自动生成的方法存根
-		String limit1 = properties.getProperty("limit", "20");
-        this.pageSize = Integer.valueOf(limit1);
-        properties.getProperty("dbType", "mysql");
+		String prop1 = properties.getProperty("prop1");
+	       String prop2 = properties.getProperty("prop2");
+	       System.out.println(prop1 + "------" + prop2);
+
+		//System.out.println("setProperties");
+		//String pageSqlRegex = properties.getProperty("pageSqlReg");
+
+        //System.out.println(pageSqlRegex);
+        //properties.getProperty("dbType", "mysql");
 	}
+
 }

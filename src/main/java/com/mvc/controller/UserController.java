@@ -28,7 +28,7 @@ public class UserController {
 	@RequestMapping("/userList.do")
 	@ResponseBody
 	public JSONObject UserList(@RequestBody Sys_User user, HttpSession session) {
-		Map<String, Object> map = new HashMap<String, Object>();
+		/*Map<String, Object> map = new HashMap<String, Object>();
 		map.put("currPage", user.getCurrPage());
 		map.put("pageSize", user.getPageSize());
 		
@@ -36,8 +36,8 @@ public class UserController {
 		JSONObject jsonObject = new JSONObject();
 		Map<String, Object> _map = new HashMap<String, Object>();
 		jsonObject.put("rows", list);
-		jsonObject.put("total", 23);
+		jsonObject.put("total", 23);*/
 		
-		return jsonObject;
+		return null;
 	}
 }

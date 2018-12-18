@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">  
+<configuration>  
+    <!-- 配置数据库方言  目前只有mysql和oracle两种 可被 Configuration访问  -->
+    <properties>  
+        <property name="pageSqlRex" value=".*ByPage$" />
+        <property name="dialect" value="oracle" />
+    </properties>
+      
+    <!-- 配置分页拦截器 property属性可被intercept的setProperties方法访问 -->  
+    <!-- com.componentscan.unity.SqlInterceptor -->  
+    <plugins>
+        <plugin interceptor="com.componentscan.unity.SqlInterceptor">
+        	<property name="prop1" value="prop1"/>
+        	<property name="prop2" value="prop2"/>
+        </plugin>  
+    </plugins>   
+</configuration>

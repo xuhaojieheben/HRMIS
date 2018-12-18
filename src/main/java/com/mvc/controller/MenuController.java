@@ -49,10 +49,7 @@ public class MenuController extends BaseController{
 
 	@RequestMapping("/menuList.do")
 	@ResponseBody
-	public JSONObject MenuList(@RequestBody Sys_Menu menu, HttpSession session) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("currPage", menu.getCurrPage());
-		map.put("pageSize", menu.getPageSize());
+	public JSONObject MenuList(HttpSession session) {
 		
 		/*List<Sys_Menu> list = _iSysMenuService.QuerySysUserByPage(menu);
 		JSONObject jsonObject = new JSONObject();

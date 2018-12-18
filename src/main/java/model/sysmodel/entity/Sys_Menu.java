@@ -71,19 +71,4 @@ public class Sys_Menu extends BaseModel{
 	public void setISDEL(int iSDEL) {
 		ISDEL = iSDEL;
 	}
-	
-	private int CurrPage;
-	private int PageSize;
-	public int getCurrPage() {
-		return CurrPage;
-	}
-	public void setCurrPage(int currPage) {
-		this.CurrPage = currPage;
-	}
-	public int getPageSize() {
-		return PageSize;
-	}
-	public void setPageSize(int pageSize) {
-		this.PageSize = pageSize;
-	}
 }

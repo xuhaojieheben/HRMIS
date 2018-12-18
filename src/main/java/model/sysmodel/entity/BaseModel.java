@@ -6,7 +6,7 @@ public class BaseModel {
 	private int ID;
 	private Date CREATEDATE;
 	private int ISDEL;
-	private int CurrPage;
+/*	private int CurrPage;
 	private int PageSize;
 	public int getCurrPage() {
 		return CurrPage;
@@ -19,7 +19,7 @@ public class BaseModel {
 	}
 	public void setPageSize(int pageSize) {
 		this.PageSize = pageSize;
-	}
+	}*/
 	public int getID() {
 		return ID;
 	}
