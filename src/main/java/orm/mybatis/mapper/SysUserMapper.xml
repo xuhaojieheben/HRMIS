@@ -10,7 +10,7 @@
   		insert into SYS_USER (NAME, BIRTHDAY, CREATEDATE, PASSWORD, ACCOUNT, ISDEL) VALUES (#{NAME},#{BIRTHDAY},#{CREATEDATE},#{PASSWORD},#{ACCOUNT},0)
 	</insert>
 	
-	<select id="QuerySysUserByPage" parameterType="model.sysmodel.entity.Sys_User" resultType="model.sysmodel.entity.Sys_User">
+	<select id="QuerySysUserByPage" parameterType="com.core.library.Page" resultType="model.sysmodel.entity.Sys_User">
         select * from SYS_USER
     </select>
 </mapper>

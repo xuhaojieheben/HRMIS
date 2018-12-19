@@ -3,6 +3,8 @@ package com.data.service;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import com.core.library.Page;
 import com.data.iservice.ISysMenuService;
 import model.sysmodel.entity.Sys_Menu;
 import orm.mybatis.idao.ISysMenuMapper;
@@ -54,7 +56,7 @@ public class SysMenuService implements ISysMenuService{
 	}
 
 	@Override
-	public List<Sys_Menu> QuerySysUserByPage(Sys_Menu t) {
+	public List<Sys_Menu> QuerySysUserByPage(Page<Sys_Menu> t) {
 		// TODO 自动生成的方法存根
 		return _iSysMenuMapper.QuerySysUserByPage(t);
 	}

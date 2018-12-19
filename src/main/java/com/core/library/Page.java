@@ -5,19 +5,19 @@ import java.util.List;
 import java.util.Map;
 
 public class Page<T> {
-	private int pageNo = 1;//页码，默认是第一页
-    private int pageSize = 10;//每页显示的记录数，默认是10
+	private int currPage = 1;//页码，默认是第一页
+    private int pageSize = 20;//每页显示的记录数，默认是20
     private int totalRecord;//总记录数
     private int totalPage;//总页数
     private List<T> results;//对应的当前页记录
     private Map<String, Object> params = new HashMap<String, Object>();//其他的参数我们把它分装成一个Map对象
 
-    public int getPageNo() {
-       return pageNo;
+    public int getCurrPage() {
+       return currPage;
     }
 
-    public void setPageNo(int pageNo) {
-       this.pageNo = pageNo;
+    public void setCurrPage(int currPage) {
+       this.currPage = currPage;
     }
 
     public int getPageSize() {
@@ -66,7 +66,7 @@ public class Page<T> {
     @Override
     public String toString() {
        StringBuilder builder = new StringBuilder();
-       builder.append("Page [pageNo=").append(pageNo).append(", pageSize=")
+       builder.append("Page [currPage=").append(currPage).append(", pageSize=")
               .append(pageSize).append(", results=").append(results).append(
                      ", totalPage=").append(totalPage).append(
                      ", totalRecord=").append(totalRecord).append("]");

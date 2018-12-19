@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import com.core.library.Page;
 import com.data.iservice.ISysUserService;
 import model.sysmodel.entity.Sys_User;
 import orm.mybatis.idao.ISysUserMapper;
@@ -55,7 +57,7 @@ public class SysUserService implements ISysUserService{
 	}
 
 	@Override
-	public List<Sys_User> QuerySysUserByPage(Sys_User t) {
+	public List<Sys_User> QuerySysUserByPage(Page<Sys_User> t) {
 		// TODO 自动生成的方法存根
 		return _iSysUserMapper.QuerySysUserByPage(t);
 	}
