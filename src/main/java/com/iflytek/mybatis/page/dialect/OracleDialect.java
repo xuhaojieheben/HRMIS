@@ -12,6 +12,10 @@ public class OracleDialect implements Dialect{
 	    int offset = (page.getCurrPage() - 1) * page.getPageSize() + 1;  
 	    sqlBuffer.insert(0, "select u.*, rownum r from (").append(") u where rownum < ").append(offset + page.getPageSize());  
 	    sqlBuffer.insert(0, "select * from (").append(") where r >= ").append(offset);
+	    String orderBy = page.getOrderBy();
+	    if(orderBy != "") {
+	    	sqlBuffer.append(orderBy);
+	    }
 		return sqlBuffer.toString();
 	}
 }

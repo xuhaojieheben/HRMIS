@@ -101,6 +101,7 @@ public class SqlInterceptor implements Interceptor{
                 /*metaStatementHandler.setValue("delegate.boundSql.sql", pageSql);*/
         		this.SetTotalRecord(page, mappedStatement, connection);
         		String pageSql = dialect.SetPageSql(page, sql);
+        		
         		metaStatementHandler.setValue("delegate.boundSql.sql", pageSql);
         		//ReflectUtil.setFieldValue(boundSql, "sql", pageSql);
         	}
@@ -159,7 +160,7 @@ public class SqlInterceptor implements Interceptor{
             pstmt = connection.prepareStatement(countSql);  
             //通过parameterHandler给PreparedStatement对象设置参数  
             parameterHandler.setParameters(pstmt);  
-            //之后就是执行获取总记录数的Sql语句和获取结果了。  
+            //之后就是执行获取总记录数的Sql语句和获取结果了。
             rs = pstmt.executeQuery();  
             if (rs.next()) {  
                int totalRecord = rs.getInt(1);

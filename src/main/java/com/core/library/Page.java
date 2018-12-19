@@ -3,30 +3,17 @@ package com.core.library;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
-public class Page<T> {
-	private int currPage = 1;//页码，默认是第一页
-    private int pageSize = 20;//每页显示的记录数，默认是20
+import com.iflytek.mybatis.page.dialect.PageBase;
+
+public class Page<T> extends PageBase{
+	private final String ORDERBY = " ORDER BY ";
     private int totalRecord;//总记录数
     private int totalPage;//总页数
     private List<T> results;//对应的当前页记录
+    private String orderBy = "";
     private Map<String, Object> params = new HashMap<String, Object>();//其他的参数我们把它分装成一个Map对象
-
-    public int getCurrPage() {
-       return currPage;
-    }
-
-    public void setCurrPage(int currPage) {
-       this.currPage = currPage;
-    }
-
-    public int getPageSize() {
-       return pageSize;
-    }
-
-    public void setPageSize(int pageSize) {
-       this.pageSize = pageSize;
-    }
 
     public int getTotalRecord() {
        return totalRecord;
@@ -63,6 +50,21 @@ public class Page<T> {
        this.params = params;
     }
 
+	public String getOrderBy() {
+		// SQL过滤，防止注入
+        String reg = "(?:')|(?:--)|(/\\*(?:.|[\\n\\r])*?\\*/)|"
+                + "(\\b(select|update|and|or|delete|insert|trancate|char|into|substr|ascii|declare|exec|count|master|into|drop|execute)\\b)";
+        Pattern sqlPattern = Pattern.compile(reg, Pattern.CASE_INSENSITIVE);
+        if (sqlPattern.matcher(orderBy).find()) {
+            return "";
+        }
+        return ORDERBY + orderBy;
+	}
+
+	public void setOrderBy(String orderBy) {
+		this.orderBy = orderBy;
+	}
+	
     @Override
     public String toString() {
        StringBuilder builder = new StringBuilder();
