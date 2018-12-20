@@ -1,15 +1,16 @@
 package model.viewmodel.entity;
 
+import com.custom.annotation.FieldSqlWhereAnnotation;
 import com.iflytek.mybatis.page.dialect.PageBase;
 
 public class UserParam extends PageBase{
-	private String userName;
-	public String getUserName() {
-		return userName;
-	}
+	@FieldSqlWhereAnnotation(DbField="NAME")
+	private String RealName;
 
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public String getRealName() {
+		return RealName;
 	}
-	
+	public void setRealName(String realName) {
+		RealName = realName;
+	}
 }

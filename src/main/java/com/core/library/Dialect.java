@@ -8,7 +8,7 @@ package com.core.library;
  * 各个数据库方言
  */
 public interface Dialect {
-	public static enum Type {
+	public static enum DBType {
         MYSQL {
             public String getValue() {
                 return "mysql";
@@ -37,6 +37,7 @@ public interface Dialect {
      * @param pageSize
      *            每页记录大小
      * @return 返回数据库相关的分页SQL语句
+	 * @throws Throwable 
      */
-    public abstract String SetPageSql(Page<?> page, StringBuffer sql);
+    public abstract String SetPageSql(Page<?> page, StringBuffer sql) throws Throwable;
 }

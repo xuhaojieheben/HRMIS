@@ -12,6 +12,32 @@
 <script type="text/javascript" src="../bootstraptable/dist/locale/bootstrap-table-zh-CN.js"></script>
 </head>
 <body>
+ <div class="row" id="SearchList">
+<!--       <div class="col-md-4">
+          <div class="form-group">
+              <label class="col-sm-3 control-label">试卷类型</label>
+              <div class="col-sm-6">
+                  <select id="examinationType" class="form-control">
+                      <option value="0">--请选择--</option>
+                      <option value="1">正式</option>
+                      <option value="2">模拟</option>
+                  </select>
+              </div>
+          </div>
+      </div> -->
+      <div class="col-md-6">
+          <div class="form-group">
+              <label class="col-sm-2 control-label">用户姓名:</label>
+              <div class="col-sm-4">
+                  <input id="userName" class="form-control" />
+              </div>
+          </div>
+      </div>
+      <div class="box-footer">
+      	<input class="btn" type="button" id="screeningBtn" name="screeningBtn" value="筛选"  onclick="screeningSearch();" />
+
+                        </div>
+  </div>
 <div style="width:101%;height:100%" class="box-body">
     <table id="tb_user" class="table-no-bordered"></table>
 </div>
@@ -45,11 +71,11 @@ $(function () {
         //sortOrder: "asc",                   //排序方式
         queryParams: function (params) {
             var user = {   //这里的键的名字和控制器的变量名必须一致，这边改动，控制器也需要改成一样的
-            	currPage : params.offset / params.limit + 1,
-            	pageSize : params.limit,
-            	userName: 'admin22'
-            };
-            return user;
+                currPage : params.offset / params.limit + 1,
+                pageSize : params.limit,
+                realName:$("#userName").val()
+           };
+           return user;
         },//传递参数（*）  
         columns: [
         	{
@@ -101,8 +127,14 @@ $(function () {
 
         }
     }); 
+	
 
 
 });
+
+function screeningSearch() {
+    $("#tb_user").bootstrapTable('refresh');
+    //$("#tb_ExaminationInterval").bootstrapTable('refresh', { url: "/Admin/ExaminationInterval/SearchLists", query: { "examinationType": $("#examinationType").val(), "examinationTitle": $("#examinationTitle").val() } });
+}
 </script>
 </html>

@@ -1,5 +1,6 @@
 package com.core.library;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +14,12 @@ public class Page<T> extends PageBase{
     private int totalPage;//总页数
     private List<T> results;//对应的当前页记录
     private String orderBy = "";
+    private PageBase pageBase;
     private Map<String, Object> params = new HashMap<String, Object>();//其他的参数我们把它分装成一个Map对象
+    //private Class<T> clazz;
 
+    public Page() {
+    }
     public int getTotalRecord() {
        return totalRecord;
     }
@@ -74,4 +79,18 @@ public class Page<T> extends PageBase{
                      ", totalRecord=").append(totalRecord).append("]");
        return builder.toString();
     }
+
+	public PageBase getPageBase() {
+		return pageBase;
+	}
+
+	public void setPageBase(PageBase pageBase) {
+		this.pageBase = pageBase;
+	}
+/*	public Class<T> getClazz() {
+		return clazz;
+	}
+	public void setClazz(Class<T> clazz) {
+		this.clazz = clazz;
+	}*/
 }

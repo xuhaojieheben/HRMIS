@@ -24,14 +24,11 @@ public class UserController {
 	@RequestMapping("/userList.do")
 	@ResponseBody
 	public JSONObject UserList(@RequestBody UserParam user, HttpSession session) {
-		/*Map<String, Object> map = new HashMap<String, Object>();
-		map.put("currPage", user.getCurrPage());
-		map.put("pageSize", user.getPageSize());
-		*/
-		System.out.println(user.getUserName());
 		Page<Sys_User> page = new Page<Sys_User>();
 		page.setCurrPage(user.getCurrPage());
 		page.setOrderBy("Name desc");
+		page.setPageBase(user);
+		
 	    List<Sys_User> users = _iSysUserService.QuerySysUserByPage(page);
 	    page.setResults(users);
 	    JSONObject jsonObject = new JSONObject();

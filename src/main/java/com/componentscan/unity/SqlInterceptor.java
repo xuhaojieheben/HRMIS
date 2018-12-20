@@ -29,6 +29,8 @@ import org.apache.ibatis.session.RowBounds;
 import com.core.library.Dialect;
 import com.core.library.Page;
 import com.iflytek.mybatis.page.dialect.OracleDialect;
+import com.iflytek.mybatis.page.dialect.PageBase;
+import com.iflytek.mybatis.page.dialect.SqlWhereUtil;
 
 @Intercepts({@Signature( type= StatementHandler.class,  method = "prepare",  args = {Connection.class,Integer.class})})
 public class SqlInterceptor implements Interceptor{
@@ -43,7 +45,7 @@ public class SqlInterceptor implements Interceptor{
     	MetaObject metaStatementHandler = MetaObject.forObject(statementHandler, DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY, DEFAULT_REFLECTORFACTORY);
         Configuration configuration = (Configuration) metaStatementHandler.getValue("delegate.configuration");
         //Connection configuration = (Connection) invocation.getArgs()[0];
-    	Dialect.Type databaseType = null;
+    	Dialect.DBType databaseType = null;
         String _handleName = "";
         //分离代理对象链(由于目标类可能被多个拦截器拦截，从而形成多次代理，通过下面的两次循环可以分离出最原始的的目标类)
         while (metaStatementHandler.hasGetter("h")) {
@@ -58,18 +60,18 @@ public class SqlInterceptor implements Interceptor{
                     DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY,DEFAULT_REFLECTORFACTORY);
         }
         try {
-            databaseType = Dialect.Type.valueOf(configuration.getVariables().getProperty("dialect").toUpperCase());
+            databaseType = Dialect.DBType.valueOf(configuration.getVariables().getProperty("dialect").toUpperCase());
         } catch (Exception e) {
             
         }if (databaseType == null) {
-            throw new RuntimeException("the value of the dialect property in configuration.xml is not defined : " + configuration.getVariables().getProperty("dialect"));
+            throw new RuntimeException("the value of the dialect property in mybatis-config.xml is not defined : " + configuration.getVariables().getProperty("dialect"));
         }
         try {
         	_handleName = configuration.getVariables().getProperty("pageSqlRex");
         } catch (Exception e) {
             
         }if (_handleName == null) {
-            throw new RuntimeException("the value of the pageSqlRex property in configuration.xml is not defined : " + configuration.getVariables().getProperty("pageSqlRex"));
+            throw new RuntimeException("the value of the pageSqlRex property in mybatis-config.xml is not defined : " + configuration.getVariables().getProperty("pageSqlRex"));
         }
         //获取查询接口映射的相关信息
         MappedStatement mappedStatement = (MappedStatement) metaStatementHandler.getValue("delegate.mappedStatement");
@@ -90,7 +92,7 @@ public class SqlInterceptor implements Interceptor{
                 dialect = new OracleDialect();
             }
         	BoundSql boundSql = statementHandler.getBoundSql();
-        	StringBuffer sql = new StringBuffer(boundSql.getSql());
+        	StringBuffer sql = new StringBuffer(boundSql.getSql().trim());
         	Object object = boundSql.getParameterObject();
         	if(object instanceof Page<?>) {
         		Page<?> page = (Page<?>) object;
@@ -99,9 +101,16 @@ public class SqlInterceptor implements Interceptor{
                 metaStatementHandler.setValue("delegate.rowBounds.offset", RowBounds.NO_ROW_OFFSET);
                 metaStatementHandler.setValue("delegate.rowBounds.limit", RowBounds.NO_ROW_LIMIT);
                 /*metaStatementHandler.setValue("delegate.boundSql.sql", pageSql);*/
-        		this.SetTotalRecord(page, mappedStatement, connection);
+        	    try {
+        	    	PageBase pageBase = page.getPageBase();
+        	    	String whereStr = SqlWhereUtil.getSqlWhereByPageBase(pageBase);
+        	    	this.setTotalRecord(page, mappedStatement, connection, whereStr);
+        	    	sql.append(whereStr);
+        		} catch (Exception e) {
+        			// TODO: handle exception
+        			throw new Exception("SetPageSql ERROR");
+        		}
         		String pageSql = dialect.SetPageSql(page, sql);
-        		
         		metaStatementHandler.setValue("delegate.boundSql.sql", pageSql);
         		//ReflectUtil.setFieldValue(boundSql, "sql", pageSql);
         	}
@@ -139,14 +148,14 @@ public class SqlInterceptor implements Interceptor{
      * @param boundSql        boundSql
      * @return 总记录数
      */
-    private void SetTotalRecord(final Page<?> page, final MappedStatement mappedStatement,
-    		final Connection connection) throws SQLException {
+    private void setTotalRecord(final Page<?> page, final MappedStatement mappedStatement,
+    		final Connection connection, String sqlWhere) throws SQLException {
     	BoundSql boundSql = mappedStatement.getBoundSql(page);  
         //获取到我们自己写在Mapper映射语句中对应的Sql语句  
-        String sql = boundSql.getSql();  
+        String sql = boundSql.getSql().trim();  
         //通过查询Sql语句获取到对应的计算总记录数的sql语句 
         
-        String countSql = "select count(1) from (" + sql + ")";  
+        String countSql = "select count(1) from (" + sql + sqlWhere + ")";
         //通过BoundSql获取对应的参数映射  
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();  
         //利用Configuration、查询记录数的Sql语句countSql、参数映射关系parameterMappings和参数对象page建立查询记录数对应的BoundSql对象。  
@@ -161,19 +170,19 @@ public class SqlInterceptor implements Interceptor{
             //通过parameterHandler给PreparedStatement对象设置参数  
             parameterHandler.setParameters(pstmt);  
             //之后就是执行获取总记录数的Sql语句和获取结果了。
-            rs = pstmt.executeQuery();  
-            if (rs.next()) {  
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
                int totalRecord = rs.getInt(1);
                //给当前的参数page对象设置总记录数
-               page.setTotalRecord(totalRecord);  
-            }  
-        } catch (SQLException e) {  
-            e.printStackTrace();  
-        } finally {  
-            try {  
-               if (rs != null)  
-                   rs.close();  
-                if (pstmt != null)  
+               page.setTotalRecord(totalRecord);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+               if (rs != null)
+                   rs.close();
+                if (pstmt != null)
                    pstmt.close();  
             } catch (SQLException e) {  
                e.printStackTrace();  
