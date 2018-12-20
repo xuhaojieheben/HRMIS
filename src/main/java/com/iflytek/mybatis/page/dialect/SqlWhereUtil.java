@@ -3,6 +3,9 @@ package com.iflytek.mybatis.page.dialect;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import com.custom.annotation.FieldSqlWhereAnnotation;
 
 public class SqlWhereUtil {
@@ -24,7 +27,7 @@ public class SqlWhereUtil {
 				String key = f.getName();
 				try {
 					method = _pBase.getClass().getMethod("get" + key);
-					System.out.println("get" + key);
+					//System.out.println("get" + key);
 					Object _value = method.invoke(pageBase);
 					String _dbFiledName = getDbFieldName(f);
 					String dbFiledName = _dbFiledName == "" ? key : _dbFiledName;
@@ -36,12 +39,25 @@ public class SqlWhereUtil {
 							//}
 						}
 						if(f.getType().equals(String.class)) {
+							if(_value.toString().trim() != "") {
 							//添加自定义特性读取后可以知道用等于还是大于现在默认先用等于
-							sqlWhere.append(String.format(" and %1$s like %2$s", dbFiledName, "'%" + _value.toString() + "%'"));
+								sqlWhere.append(String.format(" and %1$s like %2$s", dbFiledName, "'%" + _value.toString() + "%'"));
+							}
 						}
 						if(f.getType().equals(double.class)) {
 							//添加自定义特性读取后可以知道用等于还是大于现在默认先用等于
 							sqlWhere.append(String.format(" and %1$s = %2$f", dbFiledName, (double)_value));
+						}
+						if(f.getType().equals(Date.class)) {
+							SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd");
+							String edate = date.format(_value);
+							if(key.indexOf("Begin") != -1) {
+								sqlWhere.append(String.format(" and %1$s >= %2$s", dbFiledName, "to_date('" + edate + "','yyyy-mm-dd')"));
+							}else if (key.indexOf("End") != -1) {
+								sqlWhere.append(String.format(" and %1$s <= %2$s", dbFiledName, "to_date('" + edate + "','yyyy-mm-dd')"));
+							}else {
+								sqlWhere.append(String.format(" and %1$s = %2$s", dbFiledName, "to_date('" + edate + "','yyyy-mm-dd')"));
+							}
 						}
 					}
 				} catch (NoSuchMethodException e) {

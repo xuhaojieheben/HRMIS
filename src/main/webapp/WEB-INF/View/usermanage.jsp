@@ -7,9 +7,12 @@
 <link rel="stylesheet" href="../bootstrap/css/font-awesome.min.css">
 <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="../bootstraptable/dist/bootstrap-table.css">
+<script type="text/javascript" src="../assets/js/datepicker/datepicker.css"></script>
 <script type="text/javascript" src="../static/js/jquery-2.2.3.min.js"></script>
 <script type="text/javascript" src="../bootstraptable/dist/bootstrap-table.js"></script>
 <script type="text/javascript" src="../bootstraptable/dist/locale/bootstrap-table-zh-CN.js"></script>
+<script type="text/javascript" src="../assets/js/datepicker/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="../assets/js/datepicker/bootstrap-datetimepicker.js"></script>
 </head>
 <body>
  <div class="row" id="SearchList">
@@ -25,7 +28,19 @@
               </div>
           </div>
       </div> -->
-      <div class="col-md-6">
+      <div class="col-md-4">
+          <div class="form-group">
+              <label class="col-sm-3 control-label">开始时间：</label>
+              <div class="col-sm-6">
+                  <input type="text" value="2018-11-01" id="BeginTime"  class="form_datetime">
+              </div>
+              <label class="col-sm-3 control-label">结束时间：</label>
+              <div class="col-sm-6">
+                  <input type="text" value="2018-11-30" id="EndTime"  class="form_datetime">
+              </div>
+          </div>
+      </div>
+      <div class="col-md-4">
           <div class="form-group">
               <label class="col-sm-2 control-label">用户姓名:</label>
               <div class="col-sm-4">
@@ -73,7 +88,9 @@ $(function () {
             var user = {   //这里的键的名字和控制器的变量名必须一致，这边改动，控制器也需要改成一样的
                 currPage : params.offset / params.limit + 1,
                 pageSize : params.limit,
-                realName:$("#userName").val()
+                realName:$("#userName").val(),
+                beginTime:$("#BeginTime").val(),
+                endTime:$("#EndTime").val()
            };
            return user;
         },//传递参数（*）  
@@ -133,6 +150,7 @@ $(function () {
 });
 
 function screeningSearch() {
+	$("#tb_user").bootstrapTable('refreshOptions',{pageNumber:1});
     $("#tb_user").bootstrapTable('refresh');
     //$("#tb_ExaminationInterval").bootstrapTable('refresh', { url: "/Admin/ExaminationInterval/SearchLists", query: { "examinationType": $("#examinationType").val(), "examinationTitle": $("#examinationTitle").val() } });
 }

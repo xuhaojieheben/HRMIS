@@ -15,7 +15,7 @@ public class OracleDialect implements Dialect{
 	    if(orderBy != "") {
 	    	sqlBuffer.append(orderBy);
 	    }
-	    System.out.println(sqlBuffer);
+	    //System.out.println(sqlBuffer);
 		return sqlBuffer.toString();
 	}
 }

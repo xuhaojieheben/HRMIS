@@ -6,6 +6,7 @@
 <title>HRMIS</title>
 <link href="static/login/login.css" rel="stylesheet" media="all" />
 <script type="text/javascript" src="static/js/jquery-2.2.3.min.js"></script>
+
 </head>
 <body>
 	<div class="bg">
